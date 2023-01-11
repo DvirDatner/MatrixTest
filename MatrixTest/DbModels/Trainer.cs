@@ -11,17 +11,22 @@ namespace MatrixTest
         public int GuidId { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public string FullName { get; set; }
         public DateTime CreatedDate { get; set; }
 
-        public Trainer() { }
+        public Trainer() 
+        {
+            CreatedDate = DateTime.Now;
+        }
 
-        public Trainer (int id, int guidId, string email, string password, DateTime createdDate)
+        public Trainer (int id, int guidId, string email, string password, string fullName)
         {
             Id = id;
             GuidId = guidId;
             Email = email;
             Password = password;
-            CreatedDate = createdDate;
+            CreatedDate = DateTime.Now;
+            FullName = fullName;
         }
     }
 }

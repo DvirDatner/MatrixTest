@@ -17,21 +17,29 @@ namespace MatrixTest
         public string SuitColor { get; set; }
         public decimal StartingPower { get; set; }
         public decimal CurrentPower { get; set; }
-        public Tuple<DateTime, int> TrainingCounter { get; set; }
+        public DateTime LastTrainingDate { get; set; }
+        public int TrainingCounter { get; set; }
+        public virtual Trainer Trainer { get; set; }
 
-        public Hero() { }
+        public Hero() 
+        {
+            StartedTrainDate = DateTime.Now;
+            LastTrainingDate = DateTime.Now;
+            TrainingCounter = 0;
+        }
 
-        public Hero(int id, string name, Ability ability, int guidId, DateTime startedTrainDate, string suitColor, decimal startingPower, decimal currentPower)
+        public Hero(int id, string name, Ability ability, int guidId, string suitColor, decimal startingPower, decimal currentPower)
         {
             Id = id;
             Name = name;
             Ability = ability;
             GuidId = guidId;
-            StartedTrainDate = startedTrainDate;
+            StartedTrainDate = DateTime.Now;
             SuitColor = suitColor;
             StartingPower = startingPower;
             CurrentPower = currentPower;
-            TrainingCounter = new Tuple<DateTime, int>(DateTime.Now, 0);
+            LastTrainingDate = DateTime.Now;
+            TrainingCounter = 0;
         }
     }
 }
