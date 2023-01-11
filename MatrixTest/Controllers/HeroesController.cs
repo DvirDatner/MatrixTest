@@ -9,14 +9,16 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using MatrixTest;
+using NLog;
 
 namespace MatrixTest
 {
     public class HeroesController : ApiController
     {
         private DataContext db = new DataContext();
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        // GET: api/Heroes/5
+        // GET: api/Heroes?guidId={guidId}
         public IQueryable<Hero> GetHeroes(int guidId)
         {
             return db.Heroes.Where(hero => hero.GuidId == guidId);
@@ -37,7 +39,7 @@ namespace MatrixTest
 
         // PUT: api/Heroes/Training/5
         [HttpPut]
-        [Route("Heroes/Training")]
+        [Route("api/Heroes/Training")]
         [ResponseType(typeof(void))]
         public IHttpActionResult TrainingHero(int id)
         {
@@ -52,7 +54,10 @@ namespace MatrixTest
                 return NotFound();
             }
 
-            HeroesTraining.Train(hero);
+            if (!HeroesTraining.Train(hero))
+            {
+                return StatusCode(HttpStatusCode.Forbidden);
+            }
 
             db.Entry(hero).State = EntityState.Modified;
 
@@ -60,8 +65,10 @@ namespace MatrixTest
             {
                 db.SaveChanges();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException e)
             {
+                logger.Error(e, DateTime.Now.ToString());
+
                 if (!HeroExists(id))
                 {
                     return NotFound();
@@ -72,7 +79,7 @@ namespace MatrixTest
                 }
             }
 
-            return StatusCode(HttpStatusCode.NoContent);
+            return Ok(hero);
         }
 
         // POST: api/Heroes
@@ -92,9 +99,9 @@ namespace MatrixTest
 
         // DELETE: api/Heroes/5
         [ResponseType(typeof(Hero))]
-        public IHttpActionResult DeleteHero(int guidId)
+        public IHttpActionResult DeleteHero(int id)
         {
-            Hero hero = db.Heroes.Where(h => h.GuidId == guidId).FirstOrDefault();
+            Hero hero = db.Heroes.Find(id);
             if (hero == null)
             {
                 return NotFound();

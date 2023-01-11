@@ -9,12 +9,14 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using MatrixTest;
+using NLog;
 
 namespace MatrixTest
 {
     public class TrainersController : ApiController
     {
         private DataContext db = new DataContext();
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         // GET: api/Trainers
         public IQueryable<Trainer> GetTrainers()
@@ -44,7 +46,8 @@ namespace MatrixTest
                 return BadRequest(ModelState);
             }
 
-            if (id != trainer.Id)
+            var dbTrainer = db.Trainers.Find(id);
+            if (id != trainer.Id || dbTrainer == null || trainer.GuidId != dbTrainer.GuidId)
             {
                 return BadRequest();
             }
@@ -55,8 +58,9 @@ namespace MatrixTest
             {
                 db.SaveChanges();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException e)
             {
+                logger.Error(e, DateTime.Now.ToString());
                 if (!TrainerExists(id))
                 {
                     return NotFound();
@@ -67,7 +71,7 @@ namespace MatrixTest
                 }
             }
 
-            return StatusCode(HttpStatusCode.NoContent);
+            return Ok(trainer);
         }
 
         // POST: api/Trainers
@@ -84,22 +88,6 @@ namespace MatrixTest
 
             return CreatedAtRoute("DefaultApi", new { id = trainer.Id }, trainer);
         }
-
-        //// DELETE: api/Trainers/5
-        //[ResponseType(typeof(Trainer))]
-        //public IHttpActionResult DeleteTrainer(int id)
-        //{
-        //    Trainer trainer = db.Trainers.Find(id);
-        //    if (trainer == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    db.Trainers.Remove(trainer);
-        //    db.SaveChanges();
-
-        //    return Ok(trainer);
-        //}
 
         protected override void Dispose(bool disposing)
         {
